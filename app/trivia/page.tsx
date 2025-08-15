@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -123,46 +123,26 @@ export default function TriviaPage() {
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>(
     new Array(triviaQuestions.length).fill(-1)
   );
-  const [timeLeft, setTimeLeft] = useState(60); // 2 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(80); // 2 minutes in seconds
   const [isTimerActive, setIsTimerActive] = useState(true);
   const [gameCompleted, setGameCompleted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
+  // Use a ref to always have access to the latest selectedAnswers
+  const selectedAnswersRef = useRef<number[]>(selectedAnswers);
+  selectedAnswersRef.current = selectedAnswers;
+
   const addScore = useMutation(api.score.addScore);
-
-  useEffect(() => {
-    const userEmail = localStorage.getItem("triviaUserEmail");
-    if (!userEmail) {
-      router.push("/");
-      return;
-    }
-  }, [router]);
-
-  useEffect(() => {
-    if (!isTimerActive || gameCompleted) return;
-
-    const timer = setInterval(() => {
-      setTimeLeft((prevTime) => {
-        if (prevTime <= 1) {
-          setIsTimerActive(false);
-          setGameCompleted(true);
-          handleAutoSubmit();
-          return 0;
-        }
-        return prevTime - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [isTimerActive, gameCompleted]);
 
   const handleAutoSubmit = useCallback(() => {
     if (isSubmitting) return;
     setIsSubmitting(true);
+    setIsTimerActive(false);
+    setGameCompleted(true);
 
     const results = {
-      answers: selectedAnswers,
+      answers: selectedAnswersRef.current, // Use the ref to get latest answers
       questions: triviaQuestions,
       timeExpired: true,
       completedAt: new Date().toISOString(),
@@ -178,36 +158,41 @@ export default function TriviaPage() {
       addScore({
         name: localStorage.getItem("triviaUserEmail") ?? "",
         score: correctAnswers,
-        answered: selectedAnswers.filter((answer) => answer !== -1).length,
+        answered: selectedAnswersRef.current.filter((answer) => answer !== -1)
+          .length,
         gender: localStorage.getItem("triviaUserGender") ?? "",
       });
 
       toast.info("Time's up! Your answers have been submitted.");
-
       localStorage.setItem("triviaResults", JSON.stringify(results));
       localStorage.setItem("hasCompletedTrivia", "true");
     }
 
     router.push("/results");
-  }, [selectedAnswers, router, isSubmitting]);
+  }, [router, isSubmitting, addScore]);
 
+  useEffect(() => {
+    if (!isTimerActive || gameCompleted) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prevTime) => {
+        if (prevTime <= 1) {
+          handleAutoSubmit();
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isTimerActive, gameCompleted, handleAutoSubmit]);
+
+  // Rest of your functions remain the same (handleAnswerSelect, handleNext, handlePrevious, etc.)
   const handleAnswerSelect = (answerIndex: number) => {
     if (gameCompleted) return;
-    const newAnswers = [...selectedAnswers];
+    const newAnswers = [...selectedAnswersRef.current]; // Use ref here too
     newAnswers[currentQuestion] = answerIndex;
     setSelectedAnswers(newAnswers);
-  };
-
-  const handleNext = () => {
-    if (currentQuestion < triviaQuestions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1);
-    }
   };
 
   const handleSubmit = () => {
@@ -217,7 +202,7 @@ export default function TriviaPage() {
     setGameCompleted(true);
 
     const results = {
-      answers: selectedAnswers,
+      answers: selectedAnswersRef.current, // Use ref here
       questions: triviaQuestions,
       timeExpired: false,
       completedAt: new Date().toISOString(),
@@ -234,16 +219,35 @@ export default function TriviaPage() {
       addScore({
         name: localStorage.getItem("triviaUserEmail") ?? "",
         score: correctAnswers,
-        answered: selectedAnswers.filter((answer) => answer !== -1).length,
+        answered: selectedAnswersRef.current.filter((answer) => answer !== -1)
+          .length,
         gender: localStorage.getItem("triviaUserGender") ?? "",
       });
-
-      toast.info("Time's up! Your answers have been submitted.");
 
       localStorage.setItem("triviaResults", JSON.stringify(results));
       localStorage.setItem("hasCompletedTrivia", "true");
     }
     router.push("/results");
+  };
+
+  useEffect(() => {
+    const userEmail = localStorage.getItem("triviaUserEmail");
+    if (!userEmail) {
+      router.push("/");
+      return;
+    }
+  }, [router]);
+
+  const handleNext = () => {
+    if (currentQuestion < triviaQuestions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion(currentQuestion - 1);
+    }
   };
 
   const handleGoBack = () => {
