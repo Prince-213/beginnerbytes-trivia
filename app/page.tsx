@@ -1,103 +1,216 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import type React from "react";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Clock, Users, Trophy, Zap } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+export default function HomePage() {
+  const [email, setEmail] = useState("");
+  const [gender, setGender] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  const [triviaDone, setTriviaDone] = useState(false);
+
+  useEffect(() => {
+    const hasCompletedTrivia = localStorage.getItem("hasCompletedTrivia");
+    if (hasCompletedTrivia) {
+      setTriviaDone(true);
+    }
+  }, []);
+
+  console.log(gender);
+
+  const handleGetStarted = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email.trim()) {
+      setIsLoading(true);
+      try {
+        // Store email in localStorage for now
+        localStorage.setItem("triviaUserEmail", email);
+        localStorage.setItem("triviaUserGender", gender);
+        await router.push("/trivia");
+      } catch (error) {
+        console.error("Navigation error:", error);
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const rules = [
+    {
+      icon: Clock,
+      title: "Time Challenge",
+      description:
+        "You have exactly 2 minutes to answer all questions. Think fast!",
+    },
+    {
+      icon: Users,
+      title: "Multiple Choice",
+      description:
+        "Each question has 4 possible answers. Choose the one you think is correct.",
+    },
+    {
+      icon: Zap,
+      title: "No Going Back",
+      description:
+        "Once you select an answer, you cannot change it. Make your choice count!",
+    },
+    {
+      icon: Trophy,
+      title: "Submit to Win",
+      description:
+        "Answer all questions and submit before time runs out to see your score.",
+    },
+  ];
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* Header Section */}
+        <div className="text-center mb-12">
+          <h1 className="font-heading font-black text-5xl md:text-6xl text-primary mb-4">
+            Beginner Bytes Trivia
+          </h1>
+          <p className="font-body text-lg text-muted-foreground max-w-2xl mx-auto">
+            Challenge yourself with our exciting trivia game. Test your
+            knowledge, race against time, and see how much you really know!
+          </p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Email Signup Section */}
+        <Card className="max-w-md mx-auto border-primary/20 shadow-lg">
+          <CardHeader className="text-center">
+            <CardTitle className="font-heading text-2xl text-primary">
+              Ready to Play?
+            </CardTitle>
+            <CardDescription className="font-body">
+              Enter your email to get started with the trivia challenge
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {triviaDone ? (
+              <div className=" items-center text-center space-y-2">
+                <h1 className=" font-bold text-2xl text-primary">
+                  You have Completed your Trivia Challenge!
+                </h1>
+                <p className=" text-sm">
+                  Please wait for the final scores to be processed and the
+                  winner announced :).
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleGetStarted} className="space-y-4">
+                <Input
+                  type="text"
+                  placeholder="Enter your name"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={isLoading}
+                  className="font-body text-base h-12 border-border focus:border-primary focus:ring-primary/20"
+                />
+                <Select onValueChange={setGender}>
+                  <SelectTrigger className="w-full ">
+                    <SelectValue placeholder="Select your gender" />
+                  </SelectTrigger>
+                  <SelectContent className=" w-full">
+                    <SelectGroup>
+                      <SelectLabel>Gender</SelectLabel>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full h-12 font-heading font-semibold text-lg bg-primary hover:bg-primary/90 text-primary-foreground transition-colors duration-200"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground"></div>
+                      Starting Quiz...
+                    </div>
+                  ) : (
+                    "Start Quiz Challenge"
+                  )}
+                </Button>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+
+        <br />
+
+        {/* Rules Section */}
+        <div className="mb-12">
+          <h2 className="font-heading font-bold text-3xl text-center mb-8 text-foreground">
+            How It Works
+          </h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            {rules.map((rule, index) => (
+              <Card
+                key={index}
+                className="border-border/50 hover:border-primary/30 transition-colors duration-200"
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <rule.icon className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle className="font-heading text-lg">
+                      {rule.title}
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="font-body text-base leading-relaxed">
+                    {rule.description}
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <footer className="text-center mt-16 pt-8 border-t border-border/30 w-[60%] mx-auto">
+          <p className="font-body text-base text-muted-foreground">
+            © 2025 Beginnre Bytes Quiz. Built by{" "}
+            <span className=" ">
+              <a
+                href="https://www.codafri.com"
+                className=" text-blue-400 font-medium"
+              >
+                Codafri
+              </a>
+            </span>
+            !
+          </p>
+        </footer>
+      </div>
     </div>
   );
 }

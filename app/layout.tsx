@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import localFont from "next/font/local";
+import { ConvexClientProvider } from "@/components/ConvexClientProvider";
+import { Toaster } from "sonner";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const sora = localFont({
+  src: "../app/font/Sora-VariableFont_wght.ttf", // Path relative to the file where it's defined
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -24,10 +22,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body className={`${sora.className} antialiased`}>
+        <Toaster richColors />
+        <ConvexClientProvider>{children}</ConvexClientProvider>
       </body>
     </html>
   );
